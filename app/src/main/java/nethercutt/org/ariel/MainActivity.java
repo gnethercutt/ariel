@@ -3,17 +3,19 @@ package nethercutt.org.ariel;
 import android.app.Activity;
 import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
-import android.speech.tts.Voice;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import java.util.Locale;
 import android.widget.Toast;
+
+import java.util.Locale;
 
 public class MainActivity extends Activity {
     TextToSpeech tts;
     EditText ed1;
     Button speakButton;
+    Button repeatButton;
+    String recent;
 
     protected void bindQuickText(int buttonId, final String toSpeak) {
         Button button = (Button)findViewById(buttonId);
@@ -41,17 +43,28 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        ed1=(EditText)findViewById(R.id.editText);
-        speakButton=(Button)findViewById(R.id.speak);
+        ed1 = findViewById(R.id.editText);
+        speakButton = findViewById(R.id.speak);
+        repeatButton = findViewById(R.id.repeat);
 
         tts = createTTS();
         speakButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 String toSpeak = ed1.getText().toString();
-                Toast.makeText(getApplicationContext(), toSpeak,Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), toSpeak, Toast.LENGTH_SHORT).show();
                 tts.speak(toSpeak, TextToSpeech.QUEUE_FLUSH, null);
+                recent = toSpeak;
                 ed1.setText("");
+            }
+        });
+
+        repeatButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String toSpeak = getLast();
+                Toast.makeText(getApplicationContext(), toSpeak, Toast.LENGTH_SHORT).show();
+                tts.speak(toSpeak, TextToSpeech.QUEUE_FLUSH, null);
             }
         });
 
@@ -61,6 +74,10 @@ public class MainActivity extends Activity {
         bindQuickText(R.id.thanks, "Thank you.");
         bindQuickText(R.id.yes, "Yes");
         bindQuickText(R.id.no, "No");
+    }
+
+    public String getLast() {
+        return recent;
     }
 
     public void onPause() {
@@ -79,7 +96,7 @@ public class MainActivity extends Activity {
 
     @Override
     public void onBackPressed() {
-        // Lock it down
+        // Kiosk-lite mode
     }
 
     @Override
@@ -88,23 +105,19 @@ public class MainActivity extends Activity {
         if (hasFocus) {
             hideSystemUI();
         }
-        hideSystemUI();
     }
 
     protected void hideSystemUI() {
-        // Enables regular immersive mode.
-        // For "lean back" mode, remove SYSTEM_UI_FLAG_IMMERSIVE.
-        // Or for "sticky immersive," replace it with SYSTEM_UI_FLAG_IMMERSIVE_STICKY
         View decorView = getWindow().getDecorView();
         decorView.setSystemUiVisibility(
                 View.SYSTEM_UI_FLAG_IMMERSIVE
-                        // Set the content to appear under the system bars so that the
-                        // content doesn't resize when the system bars hide and show.
-                        | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                        | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                        // Hide the nav bar and status bar
-                        | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                        | View.SYSTEM_UI_FLAG_FULLSCREEN);
+                // Set the content to appear under the system bars so that the
+                // content doesn't resize when the system bars hide and show.
+                | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                // Hide the nav bar and status bar
+                | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                | View.SYSTEM_UI_FLAG_FULLSCREEN);
     }
 }
